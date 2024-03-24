@@ -1,0 +1,24 @@
+\begin{thebibliography}{}
+
+\bibitem[Cormen 2002]{cormen2002algoritmos}
+Cormen, T.~H. (2002).
+\newblock {\em Algoritmos: teoria e pr{\'a}tica}.
+\newblock Elsevier.
+
+\bibitem[Goldbarg 2012]{goldbarg2012grafos}
+Goldbarg, M. (2012).
+\newblock {\em Grafos: Conceitos, algoritmos e aplica{\c{c}}{\~o}es}.
+\newblock Elsevier Brasil.
+
+\bibitem[Hernandes et~al. 2009]{hernandes2009problema}
+Hernandes, F., Berton, L., and Castanho, M. J. d.~P. (2009).
+\newblock O problema de caminho m{\'\i}nimo com incertezas e
+  restri{\c{c}}{\~o}es de tempo.
+\newblock {\em Pesquisa Operacional}, 29(2):471--488.
+
+\bibitem[Netto 2003]{netto2003grafos}
+Netto, P. O.~B. (2003).
+\newblock {\em Grafos: teoria, modelos, algoritmos}.
+\newblock Edgard Bl{\"u}cher.
+
+\end{thebibliography}

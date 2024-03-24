@@ -1,0 +1,417 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Trabalho de Projeto e Análise de Algoritmo}
+\PYGdefault{c+cm}{ * Mestrado em Ciência da Computação \PYGdefaultZhy{} Turma 16.1}
+\PYGdefault{c+cm}{ *}
+\PYGdefault{c+cm}{ * Alunos (nome, matricula, e\PYGdefaultZhy{}mail):}
+\PYGdefault{c+cm}{ * 	Conrado}
+\PYGdefault{c+cm}{ * 	Danilo Santos Souza                16.1.10149 \PYGdefaultZhy{} danilo.gdc@gmail.com}
+\PYGdefault{c+cm}{ * 	Rodolfo Labiapari Mansur Guimarães 16.1.10163 \PYGdefaultZhy{} rodolfolabiapari@gmail.com}
+\PYGdefault{c+cm}{ * 	Thiago Schons                      16.1.10186 \PYGdefaultZhy{} thiagoschons2@gmail.com}
+\PYGdefault{c+cm}{ *}
+\PYGdefault{c+cm}{ * Este arquivo executa o Algoritmo de Bellman Ford.}
+\PYGdefault{c+cm}{ *}
+\PYGdefault{c+cm}{ *}
+\PYGdefault{c+cm}{ * Para executar o arquivo utilize o comando:}
+\PYGdefault{c+cm}{ * 	\PYGdefaultZdq{}./nomeDoPrograma benchmark\PYGdefaultZdq{}}
+\PYGdefault{c+cm}{ *}
+\PYGdefault{c+cm}{ *}
+\PYGdefault{c+cm}{ * Saída está descrita da seguinte forma: [origem, destino](distancia) caminho}
+\PYGdefault{c+cm}{ * Abaixo é exibido um exemplo}
+\PYGdefault{c+cm}{ * [1,2](8) 1 4 2}
+\PYGdefault{c+cm}{ * [1,3](9) 1 4 2 3}
+\PYGdefault{c+cm}{ * [1,4](5) 1 4}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{c+cp}{\PYGdefaultZsh{}include} \PYGdefault{c+cpf}{\PYGdefaultZlt{}stdio.h\PYGdefaultZgt{}}
+\PYGdefault{c+cp}{\PYGdefaultZsh{}include} \PYGdefault{c+cpf}{\PYGdefaultZlt{}stdlib.h\PYGdefaultZgt{}}
+\PYGdefault{c+cp}{\PYGdefaultZsh{}include} \PYGdefault{c+cpf}{\PYGdefaultZlt{}math.h\PYGdefaultZgt{}}
+\PYGdefault{c+cp}{\PYGdefaultZsh{}include} \PYGdefault{c+cpf}{\PYGdefaultZlt{}time.h\PYGdefaultZgt{}}
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Estrutura que armazena os valores de uma aresta}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k}{typedef} \PYGdefault{k}{struct} \PYGdefault{n}{Edges} \PYGdefault{p}{\PYGdefaultZob{}}
+	\PYGdefault{k+kt}{int} \PYGdefault{n}{origem}\PYGdefault{p}{;}
+	\PYGdefault{k+kt}{int} \PYGdefault{n}{destino}\PYGdefault{p}{;}
+	\PYGdefault{k+kt}{float} \PYGdefault{n}{peso}\PYGdefault{p}{;}
+\PYGdefault{p}{\PYGdefaultZcb{}} \PYGdefault{n}{Edge}\PYGdefault{p}{;}
+
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Utilizou\PYGdefaultZhy{}se de uma pilha para imprimir a ordem de saída na forma}
+\PYGdefault{c+cm}{ * origem \PYGdefaultZhy{}\PYGdefaultZgt{} destino. O algoritmo naturalmente imprime de forma inversa, e por}
+\PYGdefault{c+cm}{ * isso necessitou de uma pilha.}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k}{typedef} \PYGdefault{k}{struct} \PYGdefault{n}{Pilhas} \PYGdefault{p}{\PYGdefaultZob{}}
+    \PYGdefault{k+kt}{int} \PYGdefault{n}{noh}\PYGdefault{p}{;}
+    \PYGdefault{k}{struct} \PYGdefault{n}{Pilhas} \PYGdefault{o}{*} \PYGdefault{n}{prox}\PYGdefault{p}{;}
+\PYGdefault{p}{\PYGdefaultZcb{}} \PYGdefault{n}{Pilha}\PYGdefault{p}{;}
+
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Procedimento de empilhar um novo item na pilha}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{void} \PYGdefault{n+nf}{pushPilha} \PYGdefault{p}{(}\PYGdefault{n}{Pilha} \PYGdefault{o}{**} \PYGdefault{n}{s}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{n}{noh}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+	\PYGdefault{n}{Pilha} \PYGdefault{o}{*} \PYGdefault{n}{noh\PYGdefaultZus{}pilha} \PYGdefault{o}{=} \PYGdefault{n}{calloc}\PYGdefault{p}{(}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{,} \PYGdefault{k}{sizeof}\PYGdefault{p}{(}\PYGdefault{n}{Pilha}\PYGdefault{p}{));}
+
+	\PYGdefault{n}{noh\PYGdefaultZus{}pilha}\PYGdefault{o}{\PYGdefaultZhy{}\PYGdefaultZgt{}}\PYGdefault{n}{noh} \PYGdefault{o}{=} \PYGdefault{n}{noh}\PYGdefault{p}{;}
+	\PYGdefault{n}{noh\PYGdefaultZus{}pilha}\PYGdefault{o}{\PYGdefaultZhy{}\PYGdefaultZgt{}}\PYGdefault{n}{prox} \PYGdefault{o}{=} \PYGdefault{o}{*}\PYGdefault{n}{s}\PYGdefault{p}{;}
+
+	\PYGdefault{o}{*}\PYGdefault{n}{s} \PYGdefault{o}{=} \PYGdefault{n}{noh\PYGdefaultZus{}pilha}\PYGdefault{p}{;}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Procedimento de retirar um item da pilha}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{int} \PYGdefault{n+nf}{popPilha} \PYGdefault{p}{(}\PYGdefault{n}{Pilha} \PYGdefault{o}{**} \PYGdefault{n}{s}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+	\PYGdefault{k+kt}{int} \PYGdefault{n}{retorno}\PYGdefault{p}{;}
+	\PYGdefault{n}{Pilha} \PYGdefault{o}{*} \PYGdefault{n}{proximo}\PYGdefault{p}{;}
+
+	\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{n}{s} \PYGdefault{o}{!=} \PYGdefault{n+nb}{NULL}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{n}{retorno} \PYGdefault{o}{=} \PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{s}\PYGdefault{p}{)}\PYGdefault{o}{\PYGdefaultZhy{}\PYGdefaultZgt{}}\PYGdefault{n}{noh}\PYGdefault{p}{;}
+		\PYGdefault{n}{proximo} \PYGdefault{o}{=} \PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{s}\PYGdefault{p}{)}\PYGdefault{o}{\PYGdefaultZhy{}\PYGdefaultZgt{}}\PYGdefault{n}{prox}\PYGdefault{p}{;}
+
+		\PYGdefault{n}{free}\PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{s}\PYGdefault{p}{);}
+
+		\PYGdefault{o}{*}\PYGdefault{n}{s} \PYGdefault{o}{=} \PYGdefault{n}{proximo}\PYGdefault{p}{;}
+
+		\PYGdefault{k}{return} \PYGdefault{n}{retorno}\PYGdefault{p}{;}
+
+	\PYGdefault{p}{\PYGdefaultZcb{}} \PYGdefault{k}{else} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{k}{return} \PYGdefault{o}{\PYGdefaultZhy{}}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{;}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Procedimento que realiza a retirada dos dados da pilha imprimindo cada um}
+\PYGdefault{c+cm}{ * deles.}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{void} \PYGdefault{n+nf}{imprimePilha}\PYGdefault{p}{(}\PYGdefault{n}{Pilha} \PYGdefault{o}{*} \PYGdefault{n}{s}\PYGdefault{p}{,} \PYGdefault{k+kt}{FILE} \PYGdefault{o}{*} \PYGdefault{n}{f}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+
+	\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{n}{s} \PYGdefault{o}{==} \PYGdefault{n+nb}{NULL}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{k}{return}\PYGdefault{p}{;}
+	\PYGdefault{p}{\PYGdefaultZcb{}} \PYGdefault{k}{else} \PYGdefault{p}{\PYGdefaultZob{}}
+
+		\PYGdefault{k}{while} \PYGdefault{p}{(}\PYGdefault{n}{s} \PYGdefault{o}{!=} \PYGdefault{n+nb}{NULL}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+			\PYGdefault{n}{fprintf}\PYGdefault{p}{(}\PYGdefault{n}{f}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{} \PYGdefaultZpc{}d\PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{s}\PYGdefault{o}{\PYGdefaultZhy{}\PYGdefaultZgt{}}\PYGdefault{n}{noh}\PYGdefault{p}{);}
+			\PYGdefault{n}{popPilha}\PYGdefault{p}{(}\PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{s}\PYGdefault{p}{);}
+		\PYGdefault{p}{\PYGdefaultZcb{}}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+	\PYGdefault{n}{fprintf}\PYGdefault{p}{(}\PYGdefault{n}{f}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Procedimento que retira todos os itens da pilha}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{void} \PYGdefault{n+nf}{esvaziaPilha}\PYGdefault{p}{(}\PYGdefault{n}{Pilha} \PYGdefault{o}{*} \PYGdefault{n}{s}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+
+	\PYGdefault{n}{Pilha} \PYGdefault{o}{*} \PYGdefault{n}{atual}\PYGdefault{p}{,} \PYGdefault{o}{*} \PYGdefault{n}{proximo}\PYGdefault{p}{;}
+
+	\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{n}{s} \PYGdefault{o}{==} \PYGdefault{n+nb}{NULL}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{k}{return}\PYGdefault{p}{;}
+	\PYGdefault{p}{\PYGdefaultZcb{}} \PYGdefault{k}{else} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{n}{atual} \PYGdefault{o}{=} \PYGdefault{n}{s}\PYGdefault{p}{;}
+		\PYGdefault{n}{proximo} \PYGdefault{o}{=} \PYGdefault{n}{s}\PYGdefault{o}{\PYGdefaultZhy{}\PYGdefaultZgt{}}\PYGdefault{n}{prox}\PYGdefault{p}{;}
+
+		\PYGdefault{k}{while} \PYGdefault{p}{(}\PYGdefault{n}{proximo} \PYGdefault{o}{!=} \PYGdefault{n+nb}{NULL}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+			\PYGdefault{n}{free} \PYGdefault{p}{(}\PYGdefault{n}{atual}\PYGdefault{p}{);}
+
+			\PYGdefault{n}{atual} \PYGdefault{o}{=} \PYGdefault{n}{proximo}\PYGdefault{p}{;}
+			\PYGdefault{n}{proximo} \PYGdefault{o}{=} \PYGdefault{n}{atual}\PYGdefault{o}{\PYGdefaultZhy{}\PYGdefaultZgt{}}\PYGdefault{n}{prox}\PYGdefault{p}{;}
+		\PYGdefault{p}{\PYGdefaultZcb{}}
+
+		\PYGdefault{n}{free} \PYGdefault{p}{(}\PYGdefault{n}{atual}\PYGdefault{p}{);}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Procedimento responsável por ler o arquivo e recolher as informações do}
+\PYGdefault{c+cm}{ * grafo nele contido.}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{void} \PYGdefault{n+nf}{le\PYGdefaultZus{}arquivo}\PYGdefault{p}{(}\PYGdefault{k+kt}{char} \PYGdefault{o}{*} \PYGdefault{n}{diretorio}\PYGdefault{p}{,} \PYGdefault{n}{Edge} \PYGdefault{o}{**} \PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{o}{*} \PYGdefault{n}{vertices}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{o}{*} \PYGdefault{n}{arestas}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{o}{*} \PYGdefault{n}{maior\PYGdefaultZus{}peso}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+
+	\PYGdefault{c+c1}{// Define o ponteiro pro arquivo em modo de leitura}
+	\PYGdefault{k+kt}{FILE} \PYGdefault{o}{*} \PYGdefault{n}{bench} \PYGdefault{o}{=} \PYGdefault{n}{fopen}\PYGdefault{p}{(}\PYGdefault{n}{diretorio}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{}r\PYGdefaultZdq{}}\PYGdefault{p}{);}
+
+	\PYGdefault{k+kt}{int} \PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{,} \PYGdefault{n}{origem\PYGdefaultZus{}tmp} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{,} \PYGdefault{n}{destino\PYGdefaultZus{}tmp} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{,} \PYGdefault{n}{peso\PYGdefaultZus{}tmp} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;}
+	\PYGdefault{k+kt}{char} \PYGdefault{n}{criou\PYGdefaultZus{}lista} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;}
+
+	\PYGdefault{c+c1}{// Contador de quantas arestas foram lidas}
+	\PYGdefault{k+kt}{int} \PYGdefault{n}{count\PYGdefaultZus{}arestas} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;}
+
+
+	\PYGdefault{c+c1}{// Lê do arquivo o comando da linha}
+	\PYGdefault{k+kt}{char} \PYGdefault{n}{comando} \PYGdefault{o}{=} \PYGdefault{n}{fgetc}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{);}
+
+	\PYGdefault{c+c1}{// Enquando não for final de arquivo}
+	\PYGdefault{k}{while} \PYGdefault{p}{(}\PYGdefault{n}{comando} \PYGdefault{o}{!=} \PYGdefault{n}{EOF}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+
+		\PYGdefault{c+c1}{// Verifica qual comando é o comando}
+		\PYGdefault{k}{switch} \PYGdefault{p}{(}\PYGdefault{n}{comando}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+			\PYGdefault{c+c1}{// Comentários serão ignorados}
+			\PYGdefault{k}{case} \PYGdefault{l+s+sc}{\PYGdefaultZsq{}c\PYGdefaultZsq{}}\PYGdefault{o}{:}
+					\PYGdefault{k}{while}\PYGdefault{p}{(}\PYGdefault{n}{fgetc}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{)} \PYGdefault{o}{!=} \PYGdefault{l+s+sc}{\PYGdefaultZsq{}\PYGdefaultZbs{}n\PYGdefaultZsq{}}\PYGdefault{p}{)} \PYGdefault{p}{;}
+
+				\PYGdefault{k}{break}\PYGdefault{p}{;}
+
+			\PYGdefault{c+c1}{// Informações iniciais do grafo como número de vértices e}
+				\PYGdefault{c+c1}{// arestas}
+			\PYGdefault{k}{case} \PYGdefault{l+s+sc}{\PYGdefaultZsq{}p\PYGdefaultZsq{}}\PYGdefault{o}{:}
+				\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{o}{!}\PYGdefault{p}{(}\PYGdefault{n}{fgetc}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{)} \PYGdefault{o}{==} \PYGdefault{l+s+sc}{\PYGdefaultZsq{} \PYGdefaultZsq{}}\PYGdefault{p}{))} \PYGdefault{p}{\PYGdefaultZob{}}
+					\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}Erro na inicializacao!}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+					\PYGdefault{n}{exit}\PYGdefault{p}{(}\PYGdefault{l+m+mi}{2}\PYGdefault{p}{);}
+				\PYGdefault{p}{\PYGdefaultZcb{}}
+				\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{o}{!}\PYGdefault{p}{(}\PYGdefault{n}{fgetc}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{)} \PYGdefault{o}{==} \PYGdefault{l+s+sc}{\PYGdefaultZsq{}s\PYGdefaultZsq{}}\PYGdefault{p}{))} \PYGdefault{p}{\PYGdefaultZob{}}
+					\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}Erro na inicializacao!}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+					\PYGdefault{n}{exit}\PYGdefault{p}{(}\PYGdefault{l+m+mi}{2}\PYGdefault{p}{);}
+				\PYGdefault{p}{\PYGdefaultZcb{}}
+				\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{o}{!}\PYGdefault{p}{(}\PYGdefault{n}{fgetc}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{)} \PYGdefault{o}{==} \PYGdefault{l+s+sc}{\PYGdefaultZsq{}p\PYGdefaultZsq{}}\PYGdefault{p}{))} \PYGdefault{p}{\PYGdefaultZob{}}
+					\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}Erro na inicializacao!}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+					\PYGdefault{n}{exit}\PYGdefault{p}{(}\PYGdefault{l+m+mi}{2}\PYGdefault{p}{);}
+				\PYGdefault{p}{\PYGdefaultZcb{}}
+
+				\PYGdefault{c+c1}{// Le o número de vertices e arestas}
+				\PYGdefault{n}{fscanf}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{}\PYGdefaultZpc{}d \PYGdefaultZpc{}d\PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{vertices}\PYGdefault{p}{,} \PYGdefault{n}{arestas}\PYGdefault{p}{);}
+
+				\PYGdefault{c+c1}{// Flag indicando que a lista foi criada}
+				\PYGdefault{n}{criou\PYGdefaultZus{}lista} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{;}
+
+				\PYGdefault{c+c1}{// Variável indicando o maior peso encontrado no momento}
+				\PYGdefault{o}{*} \PYGdefault{n}{maior\PYGdefaultZus{}peso} \PYGdefault{o}{=} \PYGdefault{o}{\PYGdefaultZhy{}}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{;}
+
+				\PYGdefault{c+c1}{// Aloca a quantidade exata de arestas lida previamente pelo}
+					\PYGdefault{c+c1}{// arquivo}
+				\PYGdefault{o}{*}\PYGdefault{n}{lista\PYGdefaultZus{}arestas} \PYGdefault{o}{=} \PYGdefault{n}{calloc}\PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{arestas}\PYGdefault{p}{,} \PYGdefault{k}{sizeof}\PYGdefault{p}{(}\PYGdefault{n}{Edge}\PYGdefault{p}{));}
+
+				\PYGdefault{k}{break}\PYGdefault{p}{;}
+
+			\PYGdefault{k}{case} \PYGdefault{l+s+sc}{\PYGdefaultZsq{}a\PYGdefaultZsq{}}\PYGdefault{o}{:}
+
+				\PYGdefault{c+c1}{// Verifica a flag de criaçao da lista}
+				\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{n}{criou\PYGdefaultZus{}lista} \PYGdefault{o}{==} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+					\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}Lista não criada!}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+					\PYGdefault{n}{exit}\PYGdefault{p}{(}\PYGdefault{o}{\PYGdefaultZhy{}}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{);}
+				\PYGdefault{p}{\PYGdefaultZcb{}}
+
+				\PYGdefault{c+c1}{// Lê a aresta}
+				\PYGdefault{n}{fscanf}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{}\PYGdefaultZpc{}d \PYGdefaultZpc{}d \PYGdefaultZpc{}d\PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{origem\PYGdefaultZus{}tmp}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{destino\PYGdefaultZus{}tmp}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{peso\PYGdefaultZus{}tmp}\PYGdefault{p}{);}
+
+				\PYGdefault{c+c1}{// Atribou as informações no vetor, na primeira posição vazia}
+				\PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{)[}\PYGdefault{n}{count\PYGdefaultZus{}arestas}\PYGdefault{p}{].}\PYGdefault{n}{origem}  \PYGdefault{o}{=} \PYGdefault{n}{origem\PYGdefaultZus{}tmp}\PYGdefault{p}{;}
+				\PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{)[}\PYGdefault{n}{count\PYGdefaultZus{}arestas}\PYGdefault{p}{].}\PYGdefault{n}{destino} \PYGdefault{o}{=} \PYGdefault{n}{destino\PYGdefaultZus{}tmp}\PYGdefault{p}{;}
+				\PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{)[}\PYGdefault{n}{count\PYGdefaultZus{}arestas}\PYGdefault{p}{].}\PYGdefault{n}{peso}    \PYGdefault{o}{=} \PYGdefault{n}{peso\PYGdefaultZus{}tmp}\PYGdefault{p}{;}
+
+				\PYGdefault{c+c1}{// Verifica se encontrou algum peso maior que o já encontrado}
+				\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{n}{peso\PYGdefaultZus{}tmp} \PYGdefault{o}{\PYGdefaultZgt{}} \PYGdefault{o}{*} \PYGdefault{n}{maior\PYGdefaultZus{}peso}\PYGdefault{p}{)}
+					\PYGdefault{o}{*} \PYGdefault{n}{maior\PYGdefaultZus{}peso} \PYGdefault{o}{=} \PYGdefault{n}{peso\PYGdefaultZus{}tmp}\PYGdefault{p}{;}
+
+				\PYGdefault{c+c1}{// Le a aresta e seu valor}
+				\PYGdefault{n}{count\PYGdefaultZus{}arestas}\PYGdefault{o}{++}\PYGdefault{p}{;}
+
+				\PYGdefault{c+c1}{// Quebra a linha}
+				\PYGdefault{n}{fgetc}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{);}
+
+				\PYGdefault{k}{break}\PYGdefault{p}{;}
+
+			\PYGdefault{k}{default}\PYGdefault{o}{:}
+				\PYGdefault{k}{break}\PYGdefault{p}{;}
+		\PYGdefault{p}{\PYGdefaultZcb{}}
+
+		\PYGdefault{c+c1}{// Le o proximo comando}
+		\PYGdefault{n}{comando} \PYGdefault{o}{=} \PYGdefault{n}{fgetc}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{);}
+	\PYGdefault{p}{\PYGdefaultZcb{}} \PYGdefault{c+c1}{//while}
+
+	\PYGdefault{c+c1}{// Verifica se a contagem de leitura de arestas foi realmente exato}
+	\PYGdefault{k}{if} \PYGdefault{p}{((}\PYGdefault{n}{criou\PYGdefaultZus{}lista} \PYGdefault{o}{==} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{)} \PYGdefault{o}{||} \PYGdefault{p}{(}\PYGdefault{n}{count\PYGdefaultZus{}arestas} \PYGdefault{o}{!=} \PYGdefault{o}{*}\PYGdefault{n}{arestas}\PYGdefault{p}{))} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}Numero de arestas está incorreto em relação ao arquivo.}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+		\PYGdefault{n}{exit}\PYGdefault{p}{(}\PYGdefault{o}{\PYGdefaultZhy{}}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{);}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+
+	\PYGdefault{c+c1}{// Para a representação do infinito, utilizou\PYGdefaultZhy{}se o maior peso encontrado ao}
+	\PYGdefault{c+c1}{// quadrado}
+	\PYGdefault{o}{*}\PYGdefault{n}{maior\PYGdefaultZus{}peso} \PYGdefault{o}{=} \PYGdefault{o}{*}\PYGdefault{n}{maior\PYGdefaultZus{}peso} \PYGdefault{o}{*} \PYGdefault{o}{*}\PYGdefault{n}{maior\PYGdefaultZus{}peso}\PYGdefault{p}{;}
+
+	\PYGdefault{c+c1}{// Fecha o arquivo aberto}
+	\PYGdefault{n}{fclose}\PYGdefault{p}{(}\PYGdefault{n}{bench}\PYGdefault{p}{);}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Procedimento simples para impressão de das distâncias encontradas}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{void} \PYGdefault{n+nf}{imprimeDistancias}\PYGdefault{p}{(}\PYGdefault{k+kt}{int} \PYGdefault{o}{*} \PYGdefault{n}{distancia}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{n}{vertices}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+	\PYGdefault{k+kt}{int} \PYGdefault{n}{i}\PYGdefault{p}{;}
+	\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n\PYGdefaultZbs{}n\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+	\PYGdefault{k}{for} \PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{i} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{vertices}\PYGdefault{p}{;} \PYGdefault{n}{i}\PYGdefault{o}{++}\PYGdefault{p}{)}  \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}\PYGdefaultZpc{}4d \PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{i}\PYGdefault{p}{);}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+
+	\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+
+	\PYGdefault{k}{for} \PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{i} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{vertices}\PYGdefault{p}{;} \PYGdefault{n}{i}\PYGdefault{o}{++}\PYGdefault{p}{)}  \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}\PYGdefaultZpc{}4d \PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{distancia}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{]);}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Procedimento que imprime os predecessores de cada vértice}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{void} \PYGdefault{n+nf}{imprimePredecessores}\PYGdefault{p}{(}\PYGdefault{k+kt}{int} \PYGdefault{o}{*} \PYGdefault{n}{predecessor}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{n}{vertices}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+	\PYGdefault{k+kt}{int} \PYGdefault{n}{i}\PYGdefault{p}{;}
+	\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+	\PYGdefault{k}{for} \PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{i} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{vertices}\PYGdefault{p}{;} \PYGdefault{n}{i}\PYGdefault{o}{++}\PYGdefault{p}{)}  \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}\PYGdefaultZpc{}4d \PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{i}\PYGdefault{p}{);}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+
+	\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+
+	\PYGdefault{k}{for} \PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{i} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{vertices}\PYGdefault{p}{;} \PYGdefault{n}{i}\PYGdefault{o}{++}\PYGdefault{p}{)}  \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}\PYGdefaultZpc{}4d \PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{predecessor}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{]);}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Algoritmo De Belmman\PYGdefaultZhy{}Ford.}
+\PYGdefault{c+cm}{ * Baseado no pseudocódigo do livro do Cormen.}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{void} \PYGdefault{n+nf}{bellmanFord}\PYGdefault{p}{(}\PYGdefault{n}{Edge} \PYGdefault{o}{*} \PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{o}{**} \PYGdefault{n}{distancia}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{o}{**} \PYGdefault{n}{predecessor}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{n}{vertices}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{n}{arestas}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{n}{origem}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{n}{maior\PYGdefaultZus{}peso}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+	\PYGdefault{k+kt}{int} \PYGdefault{n}{i}\PYGdefault{p}{,} \PYGdefault{n}{j}\PYGdefault{p}{,} \PYGdefault{n}{peso}\PYGdefault{p}{;}
+
+	\PYGdefault{c+c1}{// Aloca um vetor de distâncias e de predecessores temporários}
+	\PYGdefault{k+kt}{int} \PYGdefault{o}{*} \PYGdefault{n}{distancia\PYGdefaultZus{}temp}   \PYGdefault{o}{=} \PYGdefault{n}{calloc}\PYGdefault{p}{(}\PYGdefault{n}{vertices}\PYGdefault{p}{,} \PYGdefault{k}{sizeof}\PYGdefault{p}{(}\PYGdefault{k+kt}{int}\PYGdefault{p}{));}
+	\PYGdefault{k+kt}{int} \PYGdefault{o}{*} \PYGdefault{n}{predecessor\PYGdefaultZus{}temp} \PYGdefault{o}{=} \PYGdefault{n}{calloc}\PYGdefault{p}{(}\PYGdefault{n}{vertices}\PYGdefault{p}{,} \PYGdefault{k}{sizeof}\PYGdefault{p}{(}\PYGdefault{k+kt}{int}\PYGdefault{p}{));}
+
+	\PYGdefault{c+c1}{// Inicializa os vetores temporários com}
+	\PYGdefault{k}{for} \PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{i} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{vertices}\PYGdefault{p}{;} \PYGdefault{n}{i}\PYGdefault{o}{++}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{c+c1}{// Distância como \PYGdefaultZsq{}infinito\PYGdefaultZsq{}}
+		\PYGdefault{n}{distancia\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{]} \PYGdefault{o}{=} \PYGdefault{n}{maior\PYGdefaultZus{}peso}\PYGdefault{p}{;}
+		\PYGdefault{c+c1}{// predecessor como inexistente no momento}
+		\PYGdefault{n}{predecessor\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{]} \PYGdefault{o}{=} \PYGdefault{o}{\PYGdefaultZhy{}}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{;}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+
+	\PYGdefault{c+c1}{// Informa que a distância da origem pra ela mesma é 0}
+	\PYGdefault{n}{distancia\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{origem} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{]} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;}
+
+	\PYGdefault{c+c1}{// Executa o algoritmo}
+	\PYGdefault{k}{for} \PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{i} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{vertices}\PYGdefault{p}{;} \PYGdefault{n}{i}\PYGdefault{o}{++}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{k}{for} \PYGdefault{p}{(}\PYGdefault{n}{j} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{j} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{arestas}\PYGdefault{p}{;} \PYGdefault{n}{j}\PYGdefault{o}{++}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+			\PYGdefault{n}{peso} \PYGdefault{o}{=} \PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{j}\PYGdefault{p}{].}\PYGdefault{n}{peso}\PYGdefault{p}{;}
+
+			\PYGdefault{c+c1}{// Verifica se existe uma distância menor por outro caminho}
+			\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{n}{distancia\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{j}\PYGdefault{p}{].}\PYGdefault{n}{origem} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{]} \PYGdefault{o}{+} \PYGdefault{n}{peso} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{distancia\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{j}\PYGdefault{p}{].}\PYGdefault{n}{destino} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{]} \PYGdefault{p}{)\PYGdefaultZob{}}
+				\PYGdefault{c+c1}{// Se sim, realiza as atualizações}
+				\PYGdefault{n}{distancia\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{j}\PYGdefault{p}{].}\PYGdefault{n}{destino} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{]} \PYGdefault{o}{=} \PYGdefault{n}{distancia\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{j}\PYGdefault{p}{].}\PYGdefault{n}{origem} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{]} \PYGdefault{o}{+} \PYGdefault{n}{peso}\PYGdefault{p}{;}
+
+				\PYGdefault{n}{predecessor\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{j}\PYGdefault{p}{].}\PYGdefault{n}{destino} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{]} \PYGdefault{o}{=} \PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{j}\PYGdefault{p}{].}\PYGdefault{n}{origem} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{;}
+			\PYGdefault{p}{\PYGdefaultZcb{}}
+		\PYGdefault{p}{\PYGdefaultZcb{}}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+
+	\PYGdefault{c+c1}{// Realiza uma verificação final de ciclos negativos}
+	\PYGdefault{k}{for} \PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{i} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{arestas}\PYGdefault{p}{;} \PYGdefault{n}{i}\PYGdefault{o}{++}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{n}{peso} \PYGdefault{o}{=} \PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{].}\PYGdefault{n}{peso}\PYGdefault{p}{;}
+
+		\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{n}{distancia\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{].}\PYGdefault{n}{origem} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{]} \PYGdefault{o}{+} \PYGdefault{n}{peso} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{distancia\PYGdefaultZus{}temp}\PYGdefault{p}{[}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{].}\PYGdefault{n}{destino} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{])} \PYGdefault{p}{\PYGdefaultZob{}}
+			\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}[\PYGdefaultZpc{}d,\PYGdefaultZpc{}d] Graph contains a negative\PYGdefaultZhy{}weight cycle}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{].}\PYGdefault{n}{origem}\PYGdefault{p}{,} \PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{].}\PYGdefault{n}{destino}\PYGdefault{p}{);}
+			\PYGdefault{n}{exit}\PYGdefault{p}{(}\PYGdefault{o}{\PYGdefaultZhy{}}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{);}
+		\PYGdefault{p}{\PYGdefaultZcb{}}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+
+	\PYGdefault{c+c1}{// Retorna os vetores criados}
+	\PYGdefault{o}{*}\PYGdefault{n}{distancia} \PYGdefault{o}{=} \PYGdefault{n}{distancia\PYGdefaultZus{}temp}\PYGdefault{p}{;}
+	\PYGdefault{o}{*}\PYGdefault{n}{predecessor} \PYGdefault{o}{=} \PYGdefault{n}{predecessor\PYGdefaultZus{}temp}\PYGdefault{p}{;}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Procedimento final que imprime o caminho para melhor visualização do usuário}
+\PYGdefault{c+cm}{ * bem como o valor total da distância.}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{void} \PYGdefault{n+nf}{imprimeTodosCaminhos}\PYGdefault{p}{(}\PYGdefault{k+kt}{FILE} \PYGdefault{o}{*} \PYGdefault{n}{file}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{o}{*} \PYGdefault{n}{distancia}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{o}{*} \PYGdefault{n}{predecessor}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{n}{vertices}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{n}{origem}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+
+	\PYGdefault{k+kt}{int} \PYGdefault{n}{anterior}\PYGdefault{p}{,} \PYGdefault{n}{i}\PYGdefault{p}{;}
+
+	\PYGdefault{n}{Pilha} \PYGdefault{o}{*} \PYGdefault{n}{stack}\PYGdefault{p}{;}
+
+	\PYGdefault{k}{for}\PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{i} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{vertices}\PYGdefault{p}{;} \PYGdefault{n}{i}\PYGdefault{o}{++}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{!=} \PYGdefault{n}{origem} \PYGdefault{o}{\PYGdefaultZhy{}}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+			\PYGdefault{k}{if} \PYGdefault{p}{(}\PYGdefault{n}{predecessor}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{]} \PYGdefault{o}{!=} \PYGdefault{o}{\PYGdefaultZhy{}}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+
+				\PYGdefault{n}{fprintf}\PYGdefault{p}{(}\PYGdefault{n}{file}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{}[\PYGdefaultZpc{}d,\PYGdefaultZpc{}d](\PYGdefaultZpc{}d)\PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{origem}\PYGdefault{p}{,} \PYGdefault{n}{i} \PYGdefault{o}{+} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{,} \PYGdefault{n}{distancia}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{]);}
+
+				\PYGdefault{n}{stack} \PYGdefault{o}{=} \PYGdefault{n+nb}{NULL}\PYGdefault{p}{;}
+
+				\PYGdefault{n}{pushPilha}\PYGdefault{p}{(}\PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{stack}\PYGdefault{p}{,} \PYGdefault{n}{i} \PYGdefault{o}{+} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{);}
+
+				\PYGdefault{n}{anterior} \PYGdefault{o}{=} \PYGdefault{n}{predecessor}\PYGdefault{p}{[}\PYGdefault{n}{i}\PYGdefault{p}{];}
+				\PYGdefault{k}{while}\PYGdefault{p}{(}\PYGdefault{n}{anterior} \PYGdefault{o}{!=} \PYGdefault{n}{origem} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+					\PYGdefault{n}{pushPilha}\PYGdefault{p}{(}\PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{stack}\PYGdefault{p}{,} \PYGdefault{n}{anterior} \PYGdefault{o}{+} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{);}
+
+					\PYGdefault{n}{anterior} \PYGdefault{o}{=} \PYGdefault{n}{predecessor}\PYGdefault{p}{[}\PYGdefault{n}{anterior}\PYGdefault{p}{];}
+				\PYGdefault{p}{\PYGdefaultZcb{}}
+
+				\PYGdefault{n}{fprintf}\PYGdefault{p}{(}\PYGdefault{n}{file}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{} \PYGdefaultZpc{}d\PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{origem}\PYGdefault{p}{);}
+
+				\PYGdefault{n}{imprimePilha}\PYGdefault{p}{(}\PYGdefault{n}{stack}\PYGdefault{p}{,} \PYGdefault{n}{file}\PYGdefault{p}{);}
+			\PYGdefault{p}{\PYGdefaultZcb{}}
+		\PYGdefault{p}{\PYGdefaultZcb{}}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+\PYGdefault{c+cm}{/*}
+\PYGdefault{c+cm}{ * Desalocas as memórias alocadas pelo algoritmo}
+\PYGdefault{c+cm}{ */}
+\PYGdefault{k+kt}{void} \PYGdefault{n+nf}{desaloca}\PYGdefault{p}{(}\PYGdefault{n}{Edge} \PYGdefault{o}{**} \PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{o}{**} \PYGdefault{n}{distancia}\PYGdefault{p}{,} \PYGdefault{k+kt}{int} \PYGdefault{o}{**} \PYGdefault{n}{predecessor}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+
+	\PYGdefault{n}{free}\PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{);}
+	\PYGdefault{n}{free}\PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{distancia}\PYGdefault{p}{);}
+	\PYGdefault{n}{free}\PYGdefault{p}{(}\PYGdefault{o}{*}\PYGdefault{n}{predecessor}\PYGdefault{p}{);}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+
+
+\PYGdefault{k+kt}{int} \PYGdefault{n+nf}{main}\PYGdefault{p}{(}\PYGdefault{k+kt}{int} \PYGdefault{n}{argc}\PYGdefault{p}{,} \PYGdefault{k+kt}{char}\PYGdefault{o}{**} \PYGdefault{n}{argv}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+
+	\PYGdefault{k}{if}\PYGdefault{p}{(}\PYGdefault{n}{argc} \PYGdefault{o}{==} \PYGdefault{l+m+mi}{2}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{c+c1}{// Variáveis de cálculo de tempo}
+		\PYGdefault{k+kt}{clock\PYGdefaultZus{}t} \PYGdefault{n}{tempo\PYGdefaultZus{}inicio}\PYGdefault{p}{,} \PYGdefault{n}{tempo\PYGdefaultZus{}final}\PYGdefault{p}{;}
+		\PYGdefault{k+kt}{double} \PYGdefault{n}{intervalo\PYGdefaultZus{}real} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;}
+
+		\PYGdefault{n}{Edge} \PYGdefault{o}{*} \PYGdefault{n}{lista\PYGdefaultZus{}arestas} \PYGdefault{o}{=} \PYGdefault{n+nb}{NULL}\PYGdefault{p}{;}
+		\PYGdefault{k+kt}{int} \PYGdefault{n}{i}\PYGdefault{p}{,} \PYGdefault{n}{vertices} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{,} \PYGdefault{n}{arestas} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{,} \PYGdefault{o}{*} \PYGdefault{n}{distancia} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{,} \PYGdefault{o}{*} \PYGdefault{n}{predecessor} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{,} \PYGdefault{n}{maior\PYGdefaultZus{}peso} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;}
+		\PYGdefault{c+c1}{// Arquivo de saída de dados dos caminhos}
+		\PYGdefault{k+kt}{FILE} \PYGdefault{o}{*} \PYGdefault{n}{file} \PYGdefault{o}{=} \PYGdefault{n}{fopen}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}saida\PYGdefaultZus{}bellman.txt\PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{}w+\PYGdefaultZdq{}}\PYGdefault{p}{);}
+		\PYGdefault{c+c1}{// Arquivo de tempos de execução}
+		\PYGdefault{k+kt}{FILE} \PYGdefault{o}{*} \PYGdefault{n}{tempos} \PYGdefault{o}{=} \PYGdefault{n}{fopen}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}tempos\PYGdefaultZus{}bellman.txt\PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{}a\PYGdefaultZdq{}}\PYGdefault{p}{);}
+
+		\PYGdefault{n}{le\PYGdefaultZus{}arquivo}\PYGdefault{p}{(}\PYGdefault{n}{argv}\PYGdefault{p}{[}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{],} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{vertices}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{arestas}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{maior\PYGdefaultZus{}peso}\PYGdefault{p}{);}
+
+		\PYGdefault{k}{for} \PYGdefault{p}{(}\PYGdefault{n}{i} \PYGdefault{o}{=} \PYGdefault{l+m+mi}{0}\PYGdefault{p}{;} \PYGdefault{n}{i} \PYGdefault{o}{\PYGdefaultZlt{}} \PYGdefault{n}{vertices}\PYGdefault{p}{;} \PYGdefault{n}{i}\PYGdefault{o}{++}\PYGdefault{p}{)} \PYGdefault{p}{\PYGdefaultZob{}}
+
+			\PYGdefault{n}{tempo\PYGdefaultZus{}inicio} \PYGdefault{o}{=} \PYGdefault{n}{clock}\PYGdefault{p}{();}
+				\PYGdefault{n}{bellmanFord}\PYGdefault{p}{(}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{distancia}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{predecessor}\PYGdefault{p}{,} \PYGdefault{n}{vertices}\PYGdefault{p}{,} \PYGdefault{n}{arestas}\PYGdefault{p}{,} \PYGdefault{n}{i} \PYGdefault{o}{+} \PYGdefault{l+m+mi}{1}\PYGdefault{p}{,} \PYGdefault{n}{maior\PYGdefaultZus{}peso}\PYGdefault{p}{);}
+			\PYGdefault{n}{tempo\PYGdefaultZus{}final} \PYGdefault{o}{=} \PYGdefault{n}{clock}\PYGdefault{p}{();}
+
+			\PYGdefault{n}{intervalo\PYGdefaultZus{}real} \PYGdefault{o}{+=} \PYGdefault{p}{(}\PYGdefault{k+kt}{double}\PYGdefault{p}{)(}\PYGdefault{n}{tempo\PYGdefaultZus{}final} \PYGdefault{o}{\PYGdefaultZhy{}} \PYGdefault{n}{tempo\PYGdefaultZus{}inicio}\PYGdefault{p}{)} \PYGdefault{o}{/} \PYGdefault{n}{CLOCKS\PYGdefaultZus{}PER\PYGdefaultZus{}SEC}\PYGdefault{p}{;}
+
+			\PYGdefault{c+c1}{//imprimeTodosCaminhos(file, distancia, predecessor, vertices, i + 1);}
+		\PYGdefault{p}{\PYGdefaultZcb{}}
+
+		\PYGdefault{n}{fprintf}\PYGdefault{p}{(}\PYGdefault{n}{tempos}\PYGdefault{p}{,} \PYGdefault{l+s}{\PYGdefaultZdq{}\PYGdefaultZpc{}f}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{,} \PYGdefault{n}{intervalo\PYGdefaultZus{}real}\PYGdefault{p}{);}
+
+		\PYGdefault{n}{fclose}\PYGdefault{p}{(}\PYGdefault{n}{file}\PYGdefault{p}{);}
+		\PYGdefault{n}{fclose}\PYGdefault{p}{(}\PYGdefault{n}{tempos}\PYGdefault{p}{);}
+
+		\PYGdefault{n}{desaloca}\PYGdefault{p}{(}\PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{lista\PYGdefaultZus{}arestas}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{distancia}\PYGdefault{p}{,} \PYGdefault{o}{\PYGdefaultZam{}}\PYGdefault{n}{predecessor}\PYGdefault{p}{);}
+
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+	\PYGdefault{k}{else} \PYGdefault{p}{\PYGdefaultZob{}}
+		\PYGdefault{n}{printf}\PYGdefault{p}{(}\PYGdefault{l+s}{\PYGdefaultZdq{}Argumentos Inválidos!}\PYGdefault{l+s+se}{\PYGdefaultZbs{}n}\PYGdefault{l+s}{\PYGdefaultZdq{}}\PYGdefault{p}{);}
+		\PYGdefault{n}{exit}\PYGdefault{p}{(}\PYGdefault{o}{\PYGdefaultZhy{}}\PYGdefault{l+m+mi}{1}\PYGdefault{p}{);}
+	\PYGdefault{p}{\PYGdefaultZcb{}}
+
+	\PYGdefault{k}{return} \PYGdefault{p}{(}\PYGdefault{n}{EXIT\PYGdefaultZus{}SUCCESS}\PYGdefault{p}{);}
+\PYGdefault{p}{\PYGdefaultZcb{}}
+\end{Verbatim}

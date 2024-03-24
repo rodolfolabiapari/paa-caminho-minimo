@@ -1,0 +1,13 @@
+\begin{thebibliography}{}
+
+\bibitem[Cormen 2002]{cormen2002algoritmos}
+Cormen, T.~H. (2002).
+\newblock {\em Algoritmos: teoria e pr{\'a}tica}.
+\newblock Elsevier.
+
+\bibitem[Netto 2003]{netto2003grafos}
+Netto, P. O.~B. (2003).
+\newblock {\em Grafos: teoria, modelos, algoritmos}.
+\newblock Edgard Bl{\"u}cher.
+
+\end{thebibliography}

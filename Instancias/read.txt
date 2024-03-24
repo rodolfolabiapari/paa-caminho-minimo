@@ -1,0 +1,5 @@
+Instancia rome99.gr
+Instancia rg300_4730.gr
+Instancia rg300_768_floyd.gr
+Instancia comp-2007-2-22c-negative.gr possui arcos negativos, não sei se há fluxo (logo não roda no dijkstra)
+Instancia USA-road-d.NY.gr
